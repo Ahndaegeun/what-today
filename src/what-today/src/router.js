@@ -33,9 +33,11 @@ const routes = [
   {
     path: "/mypage",
     component: MyPage,
-    beforeEnter: (to, from, next) => {
-      console.log(to, from, next)
-    }
+
+  },
+  {
+    path: "/:PathMatch(.*)*",
+    redirect: "/"
   }
 ]
 
