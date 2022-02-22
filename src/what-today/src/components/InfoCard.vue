@@ -69,7 +69,6 @@ export default {
 .info-card-container:nth-child(1) .detail,
 .info-card-container:nth-child(2) .detail {
   font-size: 22px;
-  margin-bottom: 10px;
 }
 
 .info-card-container:nth-child(3){
@@ -84,7 +83,7 @@ export default {
 .info-card-container.rain,
 .info-card-container.dust {
   justify-content: space-around;
-  width: 23%;
+  width: 100%;
   font-size: 12px;
 }
 

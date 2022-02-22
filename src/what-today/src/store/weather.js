@@ -10,11 +10,35 @@ const weather = {
     nowWsd: 0,
     todayDust: 0,
     todayMicroDust: 0,
-    infoDataList: [],
+    infoDataList: [
+      {
+        category: "infoData",
+        name: "최고 기온",
+        detail: '로드중...',
+        time: '로드중...'
+      },
+      {
+        category: "infoData",
+        name: "최저 기온",
+        detail: '로드중...',
+        time: '로드중...'
+      },
+      {
+        category: "cloth",
+        name: ["추천 옷"],
+        detail: ["../assets/cloth.png", "반팔"],
+        time: null
+      }
+    ],
     todayWeathersOnTimes: [],
     subInfoDataList: [],
     tenDaysWeather: [],
-    gridObj: {x: 0, y: 0}
+    gridObj: {x: 0, y: 0},
+    sensibleTemper: 0,
+    maxTemp: 0,
+    minTemp: 0,
+    maxTime: '',
+    minTime: ''
   },
   mutations: {
     tudeToGrid(state, position) {
@@ -83,73 +107,37 @@ const weather = {
     setTenDaysWeather(state, item) {
       state.tenDaysWeather = item
     },
+    setSensibleTemper(state, item) {
+      state.sensibleTemper = item
+    },
+    setMaxTemp(state, item) {
+      state.maxTemp = item
+    },
+    setMinTemp(state, item) {
+      state.minTemp = item
+    },
+    setMinTime(state, item) {
+      state.minTime = item
+    },
+    setMaxTime(state, item) {
+      state.maxTime = item
+    }
   },
   actions: {
-    getThreeDaysOnWeather(context) {
-      const x = context.state.gridObj.x
-      const y = context.state.gridObj.y
-      axios({
-        method:'post',
-        url: `http://www.kma.go.kr/wid/queryDFS.jsp?gridx=${x}&gridy=${y}`
-      }).then(res => {
-        const convert = require('xml-js')
-        const obj = JSON.parse(convert.xml2json(res.data, { compact: true }))
-        const result = obj.wid.body.data
-        const resultArr = []
-        result.forEach(ele => {
-          const _degree = ele.temp._text
-          const _time = ele.hour._text + "시"
-          let _icon = ""
-  
-          switch(ele.wfEn._text) {
-            case"Clear":
-              _icon = "clear.png"
-              break;
-            case"Partly Cloudy":
-              _icon = "partlyCloudy.png"
-              break;
-            case"Mostly Cloudy":
-              _icon = "mostlyCloudy.png"
-              break;
-            case"Cloudy":
-              _icon = "cloudy.png"
-              break;
-            case"Rain":
-              _icon = "rain.png"
-              break;
-            case"Snow/Rain":
-              _icon = "snowRain.png"
-              break;
-            case"Snow":
-              _icon = "snow.png"
-              break;
-          }
-  
-          const arr ={
-            degree: _degree,
-            time: _time,
-            icon: _icon
-          }
-          resultArr.push(arr)
-        })
-        context.commit("setTodayWeathersOnTimes", resultArr)
-      })
-    },
     getNowWeatherData(context) {
       const x = context.state.gridObj.x
       const y = context.state.gridObj.y
 
-      let time = moment().format("hhmm")
-      if(parseInt(time.substring(2, 4)) < 40) {
-        time = parseInt(moment().format("hh")) - 1 + '50'
-        if(time.length === 3) {
-          time = "0" + time
-        }
-      } else {
-        time = moment().format("hhmm")
-      }
-
-      time = "0800"
+      let time = moment().format("HHmm")
+      
+      // if(parseInt(time.substring(2, 4)) < 40) {
+      //   time = parseInt(moment().format("hh")) - 1 + '50'
+      //   if(time.length === 3) {
+      //     time = "0" + time
+      //   }
+      // } else {
+      //   time = moment().format("hhmm")
+      // }
 
       const xhr = new XMLHttpRequest()
       const url = ' http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst'
@@ -164,7 +152,11 @@ const weather = {
       xhr.onreadystatechange = function () {
           if (this.readyState == 4) {
             const responseData = JSON.parse(this.responseText).response.body.items.item
-            
+            /*
+            T1H 기온
+            VEC 풍향
+            WSD 풍속
+            */
             responseData.forEach(item => {
               if(item.category === 'T1H') {
                 context.commit('setNowDeg', item.obsrValue)
@@ -176,10 +168,71 @@ const weather = {
                 context.commit('setNowWsd', item.obsrValue)
               }
             })
+            const deg = 13.12+0.6215*context.state.nowDeg-11.37*Math.pow(context.state.nowWsd*3600/1000, 0.16)+0.3965*Math.pow(context.state.nowWsd*3600/1000, 0.16)*context.state.nowDeg
+            context.commit('setSensibleTemper', deg.toFixed(1))
           }
       };
   
       xhr.send('');
+    },
+    getTotalTodayWeatherData(context) {
+      const x = context.state.gridObj.x
+      const y = context.state.gridObj.y
+
+      if(localStorage.getItem(moment().format("YYYYMMDD").toString()) == null) {
+        axios.get('http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst',{
+          params: {
+            serviceKey : 'g1awEbqZBda7FCRmozw5nrlS7ojS5sPPuOlUtQtUCdsBNAeLPB3tBSemc9YqM+waUbshlgYyrCIVbTPJlhcTLg==',
+            pageNo : 1,
+            numOfRows : 266,
+            dataType : 'JSON',
+            base_date : moment().subtract(1, 'day').format('YYYYMMDD'),
+            base_time : '2300',
+            nx : x,
+            ny : y
+          }
+        }).then(res => {
+          console.log(res)
+          const data = res.data.response.body.items
+          const resultData = []
+          for(const item of data.item) {
+            if(item.category === 'TMN') {
+              resultData.push({
+                category: "infoData",
+                name: "최고 기온",
+                detail: item.fcstValue,
+                time: item.fcstTime.substring(0, 2) + ":" + item.fcstTime.substring(2, 4)
+              })
+            } else if(item.category === 'TMX') {
+              resultData.push({
+                category: "infoData",
+                name: "최고 기온",
+                detail: item.fcstValue,
+                time: item.fcstTime.substring(0, 2) + ":" + item.fcstTime.substring(2, 4)
+              })
+            }
+            if(resultData.length == 2) break
+          }
+          resultData.push({
+            category: "cloth",
+            name: ["추천 옷"],
+            detail: ["../assets/cloth.png", "반팔"],
+            time: null
+          })
+          context.commit('setInfoDataList', resultData)
+          localStorage.setItem(moment().format("YYYYMMDD").toString(), JSON.stringify(resultData))
+        }).catch(err => {
+          console.log(err)
+        })
+      } else {
+        context.commit('setInfoDataList', JSON.parse(localStorage.getItem(moment().format("YYYYMMDD").toString())))
+      }
+      indexedDB.open.bind(123)
+      /*
+      TMN 일 최저
+      TMX 일 최고
+      fcstValue, fcstTime
+      */
     }
   }
 }

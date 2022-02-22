@@ -4,49 +4,21 @@
 
     <div class="degree-and-position">
       <span class="degree" v-text="`${this.$store.state.weather.nowDeg}°`"></span>
-      <span class="degree">(체감 -2°)</span>
+      <span class="degree">(체감 {{this.$store.state.weather.sensibleTemper}}°)</span>
       <span class="position">대전 중구</span>
     </div>
 
-    <div class="three-day-btns">
-      <button class="yesterday" type="button">어제</button>
-      <button class="today clicked" type="button">오늘</button>
-      <button class="tomorrow" type="button">내일</button>
-    </div>
-
     <div class="weather-info-wrap">
-      <InfoCard v-for="item in infoDataList" 
+      <InfoCard v-for="item in this.$store.state.weather.infoDataList" 
                 :key="item"
                 :data="item"/>
     </div>
-
-    <ul class="weather-on-times">
-      <li v-for="item in this.$store.state.weather.todayWeathersOnTimes" 
-          :key="item">
-        <div class="time">{{item.time}}</div>
-        <img src="@/assets/cloud.png" alt="icon" class="icon">
-        <div class="degree">{{item.degree}}</div>
-      </li>
-    </ul>
 
     <div class="sub-info-wrap">
       <InfoCard v-for="item in subInfoDataList" 
                 :key="item"
                 :data="item"/>
     </div>
-
-    <ul class="week-weather">
-      <li v-for="item in tenDaysWeather"
-          :key="item">
-        <span class="day-name">{{item.name}}</span>
-        <img src="@/assets/cloud.png" alt="icon" class="day-weather-icon">
-        <div class="day-detail-wrap">
-          <span>최고 {{item.detail.top}}</span>
-          <span>최저 {{item.detail.bottom}}</span>
-          <span>풍속 {{item.detail.wind}}</span>
-        </div>
-      </li>
-    </ul>
 
   </div>
 </template>
@@ -69,77 +41,20 @@ export default {
         {
           category: "infoData",
           name: "최고 기온",
-          detail: "0°",
-          time: "14:00"
+          detail: this.$store.state.weather.maxTemp,
+          time: this.$store.state.weather.maxTime
         },
         {
           category: "infoData",
           name: "최저 기온",
-          detail: "-5°",
-          time: "04:00"
+          detail: this.$store.state.weather.minTemp,
+          time: this.$store.state.weather.minTime
         },
         {
           category: "cloth",
-          name: ["추천 옷", "체감 온도"],
-          detail: ["../assets/cloth.png", "-5°"],
+          name: ["추천 옷"],
+          detail: ["../assets/cloth.png", "반팔"],
           time: null
-        }
-      ],
-      todayWeathersOnTimes: [
-        {
-          time: "6시",
-          icon: "cloud",
-          degree: "3°"
-        },
-        {
-          time: "6시",
-          icon: "cloud",
-          degree: "3°"
-        },
-        {
-          time: "6시",
-          icon: "cloud",
-          degree: "3°"
-        },
-        {
-          time: "6시",
-          icon: "cloud",
-          degree: "3°"
-        },
-        {
-          time: "6시",
-          icon: "cloud",
-          degree: "3°"
-        },
-        {
-          time: "6시",
-          icon: "cloud",
-          degree: "3°"
-        },
-        {
-          time: "6시",
-          icon: "cloud",
-          degree: "3°"
-        },
-        {
-          time: "6시",
-          icon: "cloud",
-          degree: "3°"
-        },
-        {
-          time: "6시",
-          icon: "cloud",
-          degree: "3°"
-        },
-        {
-          time: "6시",
-          icon: "cloud",
-          degree: "3°"
-        },
-        {
-          time: "6시",
-          icon: "cloud",
-          degree: "3°"
         }
       ],
       subInfoDataList: [
@@ -164,98 +79,6 @@ export default {
           detail: ["177㎍/m³", "매우나쁨"],
         }
       ],
-      tenDaysWeather: [
-        {
-          name: "화",
-          icon: "cloud",
-          detail: {
-            top: "10°",
-            bottom: "-2°",
-            wind: "5 m/s"
-          }
-        },
-        {
-          name: "화",
-          icon: "cloud",
-          detail: {
-            top: "10°",
-            bottom: "-2°",
-            wind: "5 m/s"
-          }
-        },
-        {
-          name: "화",
-          icon: "cloud",
-          detail: {
-            top: "10°",
-            bottom: "-2°",
-            wind: "5 m/s"
-          }
-        },
-        {
-          name: "화",
-          icon: "cloud",
-          detail: {
-            top: "10°",
-            bottom: "-2°",
-            wind: "5 m/s"
-          }
-        },
-        {
-          name: "화",
-          icon: "cloud",
-          detail: {
-            top: "10°",
-            bottom: "-2°",
-            wind: "5 m/s"
-          }
-        },
-        {
-          name: "화",
-          icon: "cloud",
-          detail: {
-            top: "10°",
-            bottom: "-2°",
-            wind: "5 m/s"
-          }
-        },
-        {
-          name: "화",
-          icon: "cloud",
-          detail: {
-            top: "10°",
-            bottom: "-2°",
-            wind: "5 m/s"
-          }
-        },
-        {
-          name: "화",
-          icon: "cloud",
-          detail: {
-            top: "10°",
-            bottom: "-2°",
-            wind: "5 m/s"
-          }
-        },
-        {
-          name: "화",
-          icon: "cloud",
-          detail: {
-            top: "10°",
-            bottom: "-2°",
-            wind: "5 m/s"
-          }
-        },
-        {
-          name: "화",
-          icon: "cloud",
-          detail: {
-            top: "10°",
-            bottom: "-2°",
-            wind: "5 m/s"
-          }
-        },
-      ]
     }
   },
   methods: {
@@ -264,8 +87,8 @@ export default {
       closeNav: 'nav/closeNav'
     }),
     ...mapActions({
-      getThreeDaysOnWeather: 'weather/getThreeDaysOnWeather',
-      getNowWeatherData: 'weather/getNowWeatherData'
+      getNowWeatherData: 'weather/getNowWeatherData',
+      getTotalTodayWeatherData: 'weather/getTotalTodayWeatherData'
     })
   },
   mounted() {
@@ -277,8 +100,8 @@ export default {
         y = position.coords.latitude
         x = position.coords.longitude
         this.tudeToGrid({_x: x, _y: y})
-        this.getThreeDaysOnWeather()
         this.getNowWeatherData()
+        this.getTotalTodayWeatherData()
       })
     }
   }
@@ -288,6 +111,7 @@ export default {
 <style scoped>
 .home-container {
   width: 100%;
+  height: 100vh;
   background: radial-gradient(195.3% 93.22% at 41.25% 17.43%, #DE9F70 0%, #C94E71 100%);
   display: flex;
   flex-direction: column;
@@ -370,10 +194,11 @@ export default {
 }
 
 .sub-info-wrap {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   margin-bottom: 20px;
+  gap: 10px;
   width: 80%;
-  justify-content: space-between;
 }
 
 .week-weather {
